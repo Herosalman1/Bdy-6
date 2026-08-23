@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Wish Link Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #120713;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+    }
+    .card {
+      background: #23122c;
+      width: 100%;
+      max-width: 550px;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      text-align: center;
+    }
+    h2 {
+      color: #ff5e97;
+      font-size: 1.8rem;
+      margin-bottom: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .input-group { text-align: left; margin-bottom: 20px; }
+    label {
+      display: block; color: #d1c4e9; font-size: 0.95rem;
+      margin-bottom: 8px; font-weight: 600;
+    }
+    input[type="text"] {
+      width: 100%; padding: 12px 16px; background: #180a1f;
+      border: 1px solid #3d1f4d; border-radius: 10px;
+      color: #ffffff; font-size: 0.95rem; outline: none;
+      margin-bottom: 10px;
+    }
+    input[type="text"]:focus { border-color: #a855f7; }
+    
+    .btn-add {
+      background: transparent; border: 1px dashed #a855f7; color: #a855f7;
+      padding: 10px; width: 100%; border-radius: 10px; cursor: pointer;
+      font-weight: bold; margin-bottom: 20px; transition: 0.3s;
+    }
+    .btn-add:hover { background: rgba(168, 85, 247, 0.1); }
+
+    .btn-generate {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #d946ef, #8b5cf6);
+      border: none; border-radius: 10px; color: #ffffff;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+    }
+    .result-box {
+      margin-top: 25px; display: none; flex-direction: row; gap: 15px;
+    }
+    .btn-copy, .btn-preview {
+      flex: 1; padding: 12px; border: none; border-radius: 8px;
+      color: white; font-weight: bold; cursor: pointer;
+    }
+    .btn-copy { background: #3b82f6; }
+    .btn-preview { background: #10b981; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Link Generator ✨</h2>
+    
+    <div class="input-group">
+      <label for="friendName">Friend's Name:</label>
+      <input type="text" id="friendName" placeholder="e.g. Salman...">
+    </div>
+
+    <!-- Drop Down Wish Message -->
+    <div class="input-group">
+      <label for="wishMessage">Drop Down Line (Bottom Wish):</label>
+      <input type="text" id="wishMessage" value="🥂 And may all the dreams you have dreamt come true very soon. God bless you 🎉">
+    </div>
+
+    <!-- Shayari Section -->
+    <div class="input-group" id="shayariContainer">
+      <label>Cinematic Lines / Shayari:</label>
+      <input type="text" class="shayari-input" value="ज़िंदगी के इस सफर में...">
+      <input type="text" class="shayari-input" value="कहते हैं, &quot;हर वो चीज़ जिसका डर होता हैं !&quot;">
+      <input type="text" class="shayari-input" value="आखिर में वो चीज़ होकर ही रहती हैं...">
+      <input type="text" class="shayari-input" value="तो आज आप अपने हर उस डर को पीछे छोड़ दो...">
+      <input type="text" class="shayari-input" value="क्योंकि आज बहुत ही Special Day है !">
+      <input type="text" class="shayari-input" value="Because आज मेरे सबसे प्यारे खास मित्र का Birthday है ...">
+    </div>
+    
+    <!-- Plus Button to add more lines -->
+    <button class="btn-add" onclick="addShayariInput()">➕ Add More Line</button>
+
+    <button class="btn-generate" id="genBtn" onclick="generateLink()">Generate Link 🔗</button>
+
+    <input type="hidden" id="generatedUrl">
+
+    <div class="result-box" id="resultBox">
+      <button class="btn-copy" id="copyBtn" onclick="copyLink()">Copy Link 📋</button>
+      <button class="btn-preview" onclick="previewLink()">Click To Preview 👁️</button>
+    </div>
+  </div>
+
+  <script>
+    // Title Case logic for Name
+    function toTitleCase(str) {
+      return str.toLowerCase().replace(/(?:^|\s)\w/g, function(match) { return match.toUpperCase(); });
+    }
+
+    document.getElementById('friendName').addEventListener('input', function(e) {
+      let start = this.selectionStart;
+      let end = this.selectionEnd;
+      this.value = toTitleCase(this.value);
+      this.setSelectionRange(start, end); 
+    });
+
+    // Add new input field dynamically
+    function addShayariInput() {
+      const container = document.getElementById('shayariContainer');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'shayari-input';
+      input.placeholder = 'Apni nayi line yahan likhein...';
+      container.appendChild(input);
+    }
+
+    // Generate Link logic
+    function generateLink() {
+      const name = document.getElementById('friendName').value.trim();
+      const wish = document.getElementById('wishMessage').value.trim();
+      const genBtn = document.getElementById('genBtn');
+
+      if (!name) {
+        genBtn.innerText = 'Enter Name First! ⚠️';
+        setTimeout(() => { genBtn.innerText = 'Generate Link 🔗'; }, 2000);
+        return;
+      }
+      
+      const currentUrl = window.location.href.split('?')[0];
+      let baseUrl = currentUrl.replace('index.html', '');
+      if (!baseUrl.endsWith('/')) baseUrl += '/';
+      
+      // Base link with Name
+      let fullUrl = `${baseUrl}surprise.html?name=${encodeURIComponent(name)}`;
+      
+      // Append Custom Wish Message
+      if (wish) {
+          fullUrl += `&wish=${encodeURIComponent(wish)}`;
+      }
+      
+      // Grab all shayari inputs and append to URL (t1, t2, t3...)
+      const texts = document.querySelectorAll('.shayari-input');
+      let textIndex = 1;
+      texts.forEach((txt) => {
+          if(txt.value.trim() !== '') {
+              fullUrl += `&t${textIndex}=${encodeURIComponent(txt.value.trim())}`;
+              textIndex++;
+          }
+      });
+      
+      document.getElementById('generatedUrl').value = fullUrl;
+      document.getElementById('resultBox').style.display = 'flex';
+    }
+
+    function copyLink() {
+      const url = document.getElementById('generatedUrl').value;
+      const copyBtn = document.getElementById('copyBtn');
+      navigator.clipboard.writeText(url).then(() => {
+        copyBtn.innerText = 'Copied! ✅';
+        setTimeout(() => { copyBtn.innerText = 'Copy Link 📋'; }, 2000);
+      });
+    }
+
+    function previewLink() {
+      const url = document.getElementById('generatedUrl').value;
+      if (url) window.location.href = url;
+    }
+  </script>
+</body>
+</html>
