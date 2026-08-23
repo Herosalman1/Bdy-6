@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- MOBILE MEIN DESKTOP SITE AUTO MODE KE LIYE YE LINE UPDATE KI HAI -->
+    <meta name="viewport" content="width=1024">
     <title>Happy Birthday!</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@300;400;700&family=Noto+Sans+Devanagari:wght@600&display=swap" rel="stylesheet">
     
@@ -380,7 +381,7 @@
         // Extract URL Parameters
         const urlParams = new URLSearchParams(window.location.search);
         const friendName = urlParams.get('name') || 'SALMAN';
-        const customWish = urlParams.get('wish') || 'May all your dreams come true today and always!';
+        const customWish = urlParams.get('wish') || '🥂 And may all the dreams you have dreamt come true very soon. God bless you 🎉';
         
         document.getElementById('nameMain').textContent = friendName.toUpperCase();
         document.title = `Happy Birthday ${friendName}!`;
