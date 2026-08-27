@@ -151,7 +151,6 @@
           }
       });
 
-      // Secure payload pack karke localStorage mein store karna (URL mein naam nahi aayega)
       const shortKey = 'bday_multi_' + Math.floor(Math.random() * 90000 + 10000);
       const payload = {
         name: name,
@@ -166,7 +165,6 @@
       if (!baseUrl.endsWith('/')) baseUrl += '/';
       baseUrl += 'surprise.html';
       
-      // URL mein sirf choti key jayegi
       const fullUrl = `${baseUrl}?key=${shortKey}`;
       
       document.getElementById('generatedUrl').value = fullUrl;
