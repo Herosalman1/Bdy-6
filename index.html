@@ -112,7 +112,6 @@
   </div>
 
   <script>
-    // Title Case logic for Name
     function toTitleCase(str) {
       return str.toLowerCase().replace(/(?:^|\s)\w/g, function(match) { return match.toUpperCase(); });
     }
@@ -124,7 +123,6 @@
       this.setSelectionRange(start, end); 
     });
 
-    // Add new input field dynamically
     function addShayariInput() {
       const container = document.getElementById('shayariContainer');
       const input = document.createElement('input');
@@ -134,7 +132,6 @@
       container.appendChild(input);
     }
 
-    // Generate Link logic
     function generateLink() {
       const name = document.getElementById('friendName').value.trim();
       const wish = document.getElementById('wishMessage').value.trim();
@@ -146,27 +143,31 @@
         return;
       }
       
+      const shayariInputs = document.querySelectorAll('.shayari-input');
+      const shayariArray = [];
+      shayariInputs.forEach((txt) => {
+          if(txt.value.trim() !== '') {
+              shayariArray.push(txt.value.trim());
+          }
+      });
+
+      // Secure payload pack karke localStorage mein store karna (URL mein naam nahi aayega)
+      const shortKey = 'bday_multi_' + Math.floor(Math.random() * 90000 + 10000);
+      const payload = {
+        name: name,
+        wish: wish,
+        shayari: shayariArray
+      };
+      
+      localStorage.setItem(shortKey, JSON.stringify(payload));
+      
       const currentUrl = window.location.href.split('?')[0];
       let baseUrl = currentUrl.replace('index.html', '');
       if (!baseUrl.endsWith('/')) baseUrl += '/';
+      baseUrl += 'surprise.html';
       
-      // Base link with Name
-      let fullUrl = `${baseUrl}surprise.html?name=${encodeURIComponent(name)}`;
-      
-      // Append Custom Wish Message
-      if (wish) {
-          fullUrl += `&wish=${encodeURIComponent(wish)}`;
-      }
-      
-      // Grab all shayari inputs and append to URL (t1, t2, t3...)
-      const texts = document.querySelectorAll('.shayari-input');
-      let textIndex = 1;
-      texts.forEach((txt) => {
-          if(txt.value.trim() !== '') {
-              fullUrl += `&t${textIndex}=${encodeURIComponent(txt.value.trim())}`;
-              textIndex++;
-          }
-      });
+      // URL mein sirf choti key jayegi
+      const fullUrl = `${baseUrl}?key=${shortKey}`;
       
       document.getElementById('generatedUrl').value = fullUrl;
       document.getElementById('resultBox').style.display = 'flex';
