@@ -21,6 +21,11 @@
             font-family: 'Montserrat', sans-serif;
             overflow: hidden;
             color: #fff;
+            /* Text selection block karna taaki koi content copy na kar sake */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         /* 3D EMOJI STYLING */
@@ -280,7 +285,7 @@
         </div>
     </div>
 
-    <!-- STAGE 2: CINEMATIC SEQUENCE CONTAINER (Dynamic lines will be injected here) -->
+    <!-- STAGE 2: CINEMATIC SEQUENCE CONTAINER -->
     <div id="sequenceScreen" class="screen"></div>
 
     <!-- STAGE 3: GRAND REVEAL -->
@@ -308,6 +313,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <script>
+        // ----------------------------------------------------
+        // SECURITY & ANTI-INSPECT SCRIPTS (BLOCKS RIGHT CLICK & SHORTCUTS)
+        // ----------------------------------------------------
+        // 1. Right Click Disable
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. Keyboard Shortcuts Block (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+        document.addEventListener('keydown', function(e) {
+            // F12 key
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+I / J / C or Ctrl+U
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        // ----------------------------------------------------
+
         function parse3DEmojis(element) {
             const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
             let node;
@@ -491,7 +523,6 @@
                 }
             }, "+=0.2");
 
-            // Dynamic lines animation loop
             customLines.forEach((_, index) => {
                 const id = `#text${index + 1}`;
                 tl.to(id, { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
