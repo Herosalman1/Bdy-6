@@ -280,15 +280,8 @@
         </div>
     </div>
 
-    <!-- STAGE 2: CINEMATIC SEQUENCE -->
-    <div id="sequenceScreen" class="screen">
-        <div class="cinematic-text" id="text1"></div>
-        <div class="cinematic-text" id="text2"></div>
-        <div class="cinematic-text" id="text3"></div>
-        <div class="cinematic-text" id="text4"></div>
-        <div class="cinematic-text" id="text5"></div>
-        <div class="cinematic-text" id="text6"></div>
-    </div>
+    <!-- STAGE 2: CINEMATIC SEQUENCE CONTAINER (Dynamic lines will be injected here) -->
+    <div id="sequenceScreen" class="screen"></div>
 
     <!-- STAGE 3: GRAND REVEAL -->
     <div id="revealScreen" class="screen">
@@ -315,13 +308,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <script>
-        // Use a script that converts ANY native emoji you type into 3D Windows/Discord Style Emojis
         function parse3DEmojis(element) {
             const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
             let node;
             const nodesToReplace = [];
-
-            // Simple Emoji matching regex that handles most modern emojis
             const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/gu;
 
             while (node = walker.nextNode()) {
@@ -334,7 +324,6 @@
                 const fragment = document.createDocumentFragment();
                 let lastIndex = 0;
                 let match;
-                
                 emojiRegex.lastIndex = 0;
                 
                 while ((match = emojiRegex.exec(node.nodeValue)) !== null) {
@@ -342,7 +331,6 @@
                         fragment.appendChild(document.createTextNode(node.nodeValue.slice(lastIndex, match.index)));
                     }
 
-                    // Process emoji into unicode hex (e.g. '1f382')
                     let hexParts = [];
                     for (let char of match[0]) {
                         let hex = char.codePointAt(0).toString(16);
@@ -352,15 +340,10 @@
                     }
                     const unicodeStr = hexParts.join('-');
 
-                    // Create Image element for 3D Emoji
                     const img = document.createElement('img');
                     img.className = 'emoji';
                     img.alt = match[0];
-                    
-                    // JoyPixels 3D style matches Discord/Windows style very well
                     img.src = `https://cdn.jsdelivr.net/npm/emoji-datasource-joypixels@7.0.0/img/joypixels/64/${unicodeStr}.png`;
-                    
-                    // Fallback just in case
                     img.onerror = function() {
                         this.onerror = null;
                         this.src = `https://cdn.jsdelivr.net/npm/emoji-datasource-apple@14.0.0/img/apple/64/${unicodeStr}.png`;
@@ -378,17 +361,13 @@
             });
         }
 
-        // Extract URL Parameters
+        // URL se key read karke localStorage se data fetch karna
         const urlParams = new URLSearchParams(window.location.search);
-        const friendName = urlParams.get('name') || 'SALMAN';
-        const customWish = urlParams.get('wish') || '🥂 And may all the dreams you have dreamt come true very soon. God bless you 🎉';
+        const shortKey = urlParams.get('key');
         
-        document.getElementById('nameMain').textContent = friendName.toUpperCase();
-        document.title = `Happy Birthday ${friendName}!`;
-        document.getElementById('wishMsg').innerHTML = customWish;
-
-        // Default Exact Shayari Lines
-        const defaultLines = [
+        let friendName = 'SALMAN';
+        let customWish = '🥂 And may all the dreams you have dreamt come true very soon. God bless you 🎉';
+        let customLines = [
             "ज़िंदगी के इस सफर में...",
             "कहते हैं, \"हर वो चीज़ जिसका डर होता हैं !\"",
             "आखिर में वो चीज़ होकर ही रहती हैं...",
@@ -397,11 +376,32 @@
             "Because आज मेरे सबसे प्यारे खास मित्र का Birthday है ..."
         ];
 
-        // Populate Text 1 to Text 6
-        for (let i = 1; i <= 6; i++) {
-            const val = urlParams.get(`t${i}`) || defaultLines[i-1];
-            document.getElementById(`text${i}`).textContent = val;
+        if (shortKey && localStorage.getItem(shortKey)) {
+            try {
+                const savedData = JSON.parse(localStorage.getItem(shortKey));
+                if (savedData.name) friendName = savedData.name;
+                if (savedData.wish) customWish = savedData.wish;
+                if (savedData.shayari && Array.isArray(savedData.shayari) && savedData.shayari.length > 0) {
+                    customLines = savedData.shayari;
+                }
+            } catch(e) {
+                console.error("Data parse error");
+            }
         }
+
+        document.getElementById('nameMain').textContent = friendName.toUpperCase();
+        document.title = `Happy Birthday ${friendName}!`;
+        document.getElementById('wishMsg').innerHTML = customWish;
+
+        // Dynamic Sequence Lines Inject karna
+        const sequenceScreen = document.getElementById('sequenceScreen');
+        customLines.forEach((line, index) => {
+            const div = document.createElement('div');
+            div.className = 'cinematic-text';
+            div.id = `text${index + 1}`;
+            div.textContent = line;
+            sequenceScreen.appendChild(div);
+        });
 
         // Background Music & Volume Logic
         const bgMusic = document.getElementById('bgMusic');
@@ -411,7 +411,6 @@
             bgMusic.muted = !this.checked;
         });
 
-        // Run the 3D Emoji parser after the DOM loads
         window.addEventListener('DOMContentLoaded', () => {
             parse3DEmojis(document.body);
         });
@@ -469,7 +468,6 @@
         const startBtn = document.getElementById('startBtn');
         const introScreen = document.getElementById('introScreen');
         const bottomControls = document.getElementById('bottomControls');
-        const sequenceScreen = document.getElementById('sequenceScreen');
         const revealScreen = document.getElementById('revealScreen');
 
         startBtn.addEventListener('click', () => {
@@ -478,7 +476,6 @@
 
             const tl = gsap.timeline();
 
-            // 1. Smooth Intro Fadeout
             tl.to([startBtn, bottomControls], { 
                 opacity: 0, 
                 duration: 1.2, 
@@ -494,30 +491,19 @@
                 }
             }, "+=0.2");
 
-            // 2. Exact Classic 1-by-1 Line Sequence for 6 Lines
-            tl.to('#text1', { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
-              .to('#text1', { y: -20, opacity: 0, duration: 2, delay: 1.5 });
+            // Dynamic lines animation loop
+            customLines.forEach((_, index) => {
+                const id = `#text${index + 1}`;
+                tl.to(id, { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
+                  .to(id, { y: -20, opacity: 0, duration: 2, delay: 1.5 });
+            });
 
-            tl.to('#text2', { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
-              .to('#text2', { y: -20, opacity: 0, duration: 2, delay: 1.5 });
+            tl.add(() => {
+                sequenceScreen.style.display = 'none';
+                revealScreen.classList.add('active');
+                fireworkActive = true; 
+            });
 
-            tl.to('#text3', { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
-              .to('#text3', { y: -20, opacity: 0, duration: 2, delay: 1.5 });
-
-            tl.to('#text4', { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
-              .to('#text4', { y: -20, opacity: 0, duration: 2, delay: 1.5 });
-
-            tl.to('#text5', { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
-              .to('#text5', { y: -20, opacity: 0, duration: 2, delay: 1.5 });
-
-            tl.to('#text6', { y: 0, opacity: 1, duration: 2, ease: "power2.out" })
-              .to('#text6', { y: -20, opacity: 0, duration: 2, delay: 1.5, onComplete: () => {
-                  sequenceScreen.style.display = 'none';
-                  revealScreen.classList.add('active');
-                  fireworkActive = true; 
-              }});
-
-            // 3. Reveal Screen Animation
             tl.to('#crownIcon', { y: 0, opacity: 1, duration: 1.5, ease: "back.out(1.7)" })
               .to('#hbSub', { y: 0, opacity: 1, duration: 1.5, ease: "power2.out" }, "-=0.5")
               .to('#nameMain', { scale: 1, opacity: 1, duration: 2, ease: "elastic.out(1, 0.5)" }, "-=0.8")
