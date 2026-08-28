@@ -132,6 +132,12 @@
       container.appendChild(input);
     }
 
+    // ASCII ENCODER
+    function encodeToASCII(str) {
+      if (!str) return '';
+      return str.split('').map(char => char.charCodeAt(0)).join('-');
+    }
+
     function generateLink() {
       const name = document.getElementById('friendName').value.trim();
       const wish = document.getElementById('wishMessage').value.trim();
@@ -151,21 +157,30 @@
           }
       });
 
-      const shortKey = 'bday_multi_' + Math.floor(Math.random() * 90000 + 10000);
-      const payload = {
+      // Encode Data
+      const encodedName = encodeToASCII(name);
+      
+      // Package extra large data and encode to Hash
+      const extraPayload = JSON.stringify({ wish: wish, shayari: shayariArray });
+      const encodedExtra = encodeToASCII(extraPayload);
+
+      const shortKey = 'bday_multi_' + encodedName;
+      const backupPayload = {
         name: name,
         wish: wish,
         shayari: shayariArray
       };
       
-      localStorage.setItem(shortKey, JSON.stringify(payload));
+      // Secure local backup
+      localStorage.setItem(shortKey, JSON.stringify(backupPayload));
       
-      const currentUrl = window.location.href.split('?')[0];
+      const currentUrl = window.location.href.split('?')[0].split('#')[0];
       let baseUrl = currentUrl.replace('index.html', '');
       if (!baseUrl.endsWith('/')) baseUrl += '/';
       baseUrl += 'surprise.html';
       
-      const fullUrl = `${baseUrl}?key=${shortKey}`;
+      // Dual URL Generation
+      const fullUrl = `${baseUrl}?key=${encodedName}#m=${encodedExtra}`;
       
       document.getElementById('generatedUrl').value = fullUrl;
       document.getElementById('resultBox').style.display = 'flex';
