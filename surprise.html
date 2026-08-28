@@ -393,9 +393,16 @@
             });
         }
 
-        // URL se key read karke localStorage se data fetch karna
+        // ASCII DECODER LOGIC
+        function decodeASCII(str) {
+            if (!str) return '';
+            return str.split('-').map(c => String.fromCharCode(parseInt(c, 10))).join('');
+        }
+
+        // DUAL FETCH LOGIC (Query + Hash + LocalStorage Fallback)
         const urlParams = new URLSearchParams(window.location.search);
-        const shortKey = urlParams.get('key');
+        const encodedKey = urlParams.get('key');
+        const encodedHash = window.location.hash.replace('#m=', '');
         
         let friendName = 'SALMAN';
         let customWish = '🥂 And may all the dreams you have dreamt come true very soon. God bless you 🎉';
@@ -408,16 +415,36 @@
             "Because आज मेरे सबसे प्यारे खास मित्र का Birthday है ..."
         ];
 
-        if (shortKey && localStorage.getItem(shortKey)) {
+        if (encodedKey) {
+            friendName = decodeASCII(encodedKey);
+            
+            // Backup from localStorage in case Hash processing fails
+            const backup = localStorage.getItem('bday_multi_' + encodedKey);
+            if (backup) {
+                try {
+                    const savedData = JSON.parse(backup);
+                    if (!friendName && savedData.name) friendName = savedData.name;
+                    if (!encodedHash && savedData.wish) customWish = savedData.wish;
+                    if (!encodedHash && savedData.shayari && Array.isArray(savedData.shayari) && savedData.shayari.length > 0) {
+                        customLines = savedData.shayari;
+                    }
+                } catch(e) {
+                    console.error("Data parse error");
+                }
+            }
+        }
+        
+        // Fetch complex objects from URL Hash
+        if (encodedHash) {
             try {
-                const savedData = JSON.parse(localStorage.getItem(shortKey));
-                if (savedData.name) friendName = savedData.name;
-                if (savedData.wish) customWish = savedData.wish;
-                if (savedData.shayari && Array.isArray(savedData.shayari) && savedData.shayari.length > 0) {
-                    customLines = savedData.shayari;
+                const decodedExtra = decodeASCII(encodedHash);
+                const extraData = JSON.parse(decodedExtra);
+                if (extraData.wish) customWish = extraData.wish;
+                if (extraData.shayari && Array.isArray(extraData.shayari) && extraData.shayari.length > 0) {
+                    customLines = extraData.shayari;
                 }
             } catch(e) {
-                console.error("Data parse error");
+                console.error("Hash decode error");
             }
         }
 
