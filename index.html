@@ -132,10 +132,14 @@
       container.appendChild(input);
     }
 
-    // ASCII ENCODER
+    // STRICT ASCII ENCODER (Handles Emojis Perfectly like your demo)
     function encodeToASCII(str) {
       if (!str) return '';
-      return str.split('').map(char => char.charCodeAt(0)).join('-');
+      let arr = [];
+      for (let i = 0; i < str.length; i++) {
+        arr.push(str.charCodeAt(i));
+      }
+      return arr.join('-');
     }
 
     function generateLink() {
@@ -157,33 +161,27 @@
           }
       });
 
-      // Encode Data
+      // 1. Name Encoded to Digits
       const encodedName = encodeToASCII(name);
       
-      // Package extra large data and encode to Hash
-      const extraPayload = JSON.stringify({ wish: wish, shayari: shayariArray });
-      const encodedExtra = encodeToASCII(extraPayload);
-
-      const shortKey = 'bday_multi_' + encodedName;
-      const backupPayload = {
-        name: name,
-        wish: wish,
-        shayari: shayariArray
-      };
-      
-      // Secure local backup
-      localStorage.setItem(shortKey, JSON.stringify(backupPayload));
+      // 2. Custom Message & Shayari Encoded to Digits
+      // Bundling them in a JSON string so receiver knows exactly which is which
+      const payloadStr = JSON.stringify({ wish: wish, shayari: shayariArray });
+      const encodedHashData = encodeToASCII(payloadStr);
       
       const currentUrl = window.location.href.split('?')[0].split('#')[0];
       let baseUrl = currentUrl.replace('index.html', '');
       if (!baseUrl.endsWith('/')) baseUrl += '/';
       baseUrl += 'surprise.html';
       
-      // Dual URL Generation
-      const fullUrl = `${baseUrl}?key=${encodedName}#m=${encodedExtra}`;
+      // FINAL URL: Digits in Query + Digits in Hash
+      const fullUrl = `${baseUrl}?key=${encodedName}#m=${encodedHashData}`;
       
       document.getElementById('generatedUrl').value = fullUrl;
       document.getElementById('resultBox').style.display = 'flex';
+      
+      // Backup just in case
+      localStorage.setItem('bday_' + encodedName, payloadStr);
     }
 
     function copyLink() {
